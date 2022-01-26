@@ -191,19 +191,19 @@ async def on_message(message, maskinfo=[],
         cursor = cnxn.cursor()
 
         # cursor.execute('SELECT * FROM Test_table;')
-        cursor.execute('SELECT * FROM Test_table ORDER BY CAST(CNT AS int) ASC;')
+        cursor.execute('SELECT VRCHAT FROM avatar;')
 
         row = cursor.fetchone()
 
         while row:
-            # 0=CNT, 1=DeviceType, 2=PC_Status, 3=IP, 4=PC_Time, 5=isReal
+            # 0=Number, 1=Avatar_Name, 2=Avatar_Version, 3=Avatar_SDK, 4=Avatar_Image, 5=Avatar_URL
             print(row[0], row[1], row[2], row[3], row[4], row[5])
-            allow_id = str(row[0])
-            device = str(row[1])
-            status = str(row[2])
-            ip = str(row[3])
-            time = str(row[4])
-            real = str(row[5])
+            number = str(row[0])
+            A_name = str(row[1])
+            A_version = str(row[2])
+            A_SDK = str(row[3])
+            A_img = str(row[4])
+            A_url = str(row[5])
             row = cursor.fetchone()
 
         print('Read DB!!')
@@ -372,38 +372,65 @@ async def on_message(message, maskinfo=[],
         cursor = cnxn.cursor()
 
         # cursor.execute('SELECT * FROM Test_table;')
-        cursor.execute('SELECT Access_ID FROM [VRCHAT].[dbo].[access];')
+        cursor.execute('SELECT * FROM VRCHAT.dbo.avatar;')
 
         row = cursor.fetchone()
 
         while row:
-            # 0=CNT, 1=DeviceType, 2=PC_Status, 3=IP, 4=PC_Time, 5=isReal
-            print(row[0])
-            allow_id = str(row[0])
-            #device = str(row[1])
-            #status = str(row[2])
-            #ip = str(row[3])
-            #time = str(row[4])
-            #real = str(row[5])
+            # 0=Number, 1=Avatar_Name, 2=Avatar_Version, 3=Avatar_SDK, 4=Avatar_Image, 5=Avatar_URL
+            print(row[0], row[1], row[2], row[3], row[4], row[5])
+            number = str(row[0])
+            A_name = str(row[1])
+            print(A_name)
+            A_version = str(row[2])
+            A_SDK = str(row[3])
+            A_img = str(row[4])
+            A_url = str(row[5])
             row = cursor.fetchone()
+
+        print('Read DB!!')
+
+        cursor.execute('SELECT Access_ID FROM [VRCHAT].[dbo].[access];')
+
+        row2 = cursor.fetchone()
+        print('---')
+        print(A_name[0])
+        print(A_name[1])
+
+        allow_id = []
+        while row2:
+            # 0=Number, 1=Avatar_Name, 2=Avatar_Version, 3=Avatar_SDK, 4=Avatar_Image, 5=Avatar_URL
+            print(row2[0])
+            allow_id.append(str(row2[0]))
+            row2 = cursor.fetchone()
+
         print(allow_id)
         print('Read DB!!')
         cnxn.close()
 
         # DB Access END!
 
-        your_id = message.author
+        your_id = str(message.author)
         print(your_id)
         print(allow_id)
-
-        if str(your_id) == str(allow_id):
+        print("비교시작")
+        compare_id = your_id in allow_id
+        print(compare_id)
+        print("비교완료")
+        
+        #if str(your_id) == str(compare_id):
+        if compare_id==True:
             embed = discord.Embed(title="다운로드 링크", color=0xa83232)
-            embed.add_field(name="아바타", value='아바타 정보', inline=False)
-            embed.add_field(name="다운로드 링크", value='링크 테스트', inline=False)
+            embed.set_image(url=A_img)
+            embed.add_field(name="아바타 이름", value=A_name, inline=True)
+            embed.add_field(name="아바타 버전", value=A_version, inline=False)
+            embed.add_field(name="아바타 SDK", value=A_SDK, inline=False)
+            embed.add_field(name="다운로드 링크", value=A_url, inline=False)
 
             await message.channel.send(embed=embed)
         else:
             embed = discord.Embed(title=":x:권한 없음!:x:",description="권한이 없는 디스코드 계정입니다.", color=0xCD1039)
+            embed.add_field(name="권한이 부여된 계정", value=allow_id, inline=False)
 
             await message.channel.send(embed=embed)
 
