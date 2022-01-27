@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+import urllib.request
 import sys
 import discord, asyncio
 from data import token
@@ -61,7 +62,7 @@ cnxn.close()
 async def on_ready():
     print("봇 시작")
     #
-    await bt(['DB TEST'])
+    await bt(['SELECT * FROM Table'])
     # print(client.user.name) # 봇의 이름을 출력합니다.
     # print(client.user.id) # 봇의 Discord 고유 ID를 출력합니다.
 
@@ -77,8 +78,7 @@ async def bt(zz):
 
 
 @client.event
-async def on_message(message, maskinfo=[],
-                     mark=[],stop=[],stop_c=[],stop_sell=''):  # 메시지가 들어 올 때마다 가동되는 구문입니다.
+async def on_message(message):  # 메시지가 들어 올 때마다 가동되는 구문입니다.
     if message.author.bot:  # 채팅을 친 사람이 봇일 경우
         return None  # 반응하지 않고 구문을 종료합니다.
 
@@ -191,7 +191,7 @@ async def on_message(message, maskinfo=[],
         cursor = cnxn.cursor()
 
         # cursor.execute('SELECT * FROM Test_table;')
-        cursor.execute('SELECT VRCHAT FROM avatar;')
+        cursor.execute('SELECT * FROM VRCHAT.dbo.avatar;')
 
         row = cursor.fetchone()
 
@@ -388,9 +388,13 @@ async def on_message(message, maskinfo=[],
             A_name.append(str(row[1]))
             print(A_name)
             A_version.append(str(row[2]))
+            print(A_version)
             A_SDK.append(str(row[3]))
+            print(A_SDK)
             A_img.append(str(row[4]))
+            print(A_img)
             A_url.append(str(row[5]))
+            print(A_url)
             row = cursor.fetchone()
 
         print('Read DB!!')
@@ -402,7 +406,7 @@ async def on_message(message, maskinfo=[],
         while row_cnt:
             # 0=Number
             print(row_cnt[0])
-            number = int(row[0])
+            number = int(row_cnt[0])
             row_cnt = cursor.fetchone()
 
         print('Read DB!!')
@@ -435,22 +439,34 @@ async def on_message(message, maskinfo=[],
         print(compare_id)
         print("비교완료")
 
+        global path
+        path = os.getcwd()
+        print(path)
         #if str(your_id) == str(compare_id):
         if compare_id==True:
             i = 0;
             for i in range(number):
+                dn_url = A_img[i]
+                print(dn_url)
+                string_img = A_img[i].split('/')
+                save_path = str(path)+'/img_cache/'+str(string_img[-1])
+                urllib.request.urlretrieve(dn_url,save_path)
+                #os.system("curl "+str(dn_url)+" > "+str(string_img))
+                print(string_img)
+                print(string_img[-1])
+                file = discord.File(save_path, filename=string_img[-1])
                 embed = discord.Embed(title="다운로드 링크", color=0xa83232)
-                embed.set_image(url=A_img)
-                embed.add_field(name="아바타 이름", value=A_name, inline=True)
-                embed.add_field(name="아바타 버전", value=A_version, inline=False)
-                embed.add_field(name="아바타 SDK", value=A_SDK, inline=False)
-                embed.add_field(name="다운로드 링크", value=A_url, inline=False)
+                embed.set_image(url='attachment://'+string_img[-1])
+                embed.add_field(name="아바타 이름", value=A_name[i], inline=True)
+                embed.add_field(name="아바타 버전", value=A_version[i], inline=False)
+                embed.add_field(name="아바타 SDK", value=A_SDK[i], inline=False)
+                embed.add_field(name="다운로드 링크", value=A_url[i], inline=False)
 
-                await message.channel.send(embed=embed)
-            else:
-                embed = discord.Embed(title=":x:권한 없음!:x:",description="권한이 없는 디스코드 계정입니다.", color=0xCD1039)
-                embed.add_field(name="권한이 부여된 계정", value=allow_id, inline=False)
+                await message.channel.send(file=file, embed=embed)
+        else:
+            embed = discord.Embed(title=":x:권한 없음!:x:",description="권한이 없는 디스코드 계정입니다.", color=0xCD1039)
+            embed.add_field(name="권한이 부여된 계정", value=allow_id, inline=False)
 
-            await message.channel.send(embed=embed)
+        await message.channel.send(embed=embed)
 
 client.run(token1)
