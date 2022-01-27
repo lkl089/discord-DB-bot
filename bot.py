@@ -405,7 +405,7 @@ async def on_message(message):  # 메시지가 들어 올 때마다 가동되는
 
         while row_cnt:
             # 0=Number
-            print(row_cnt[0])
+            #print(row_cnt[0])
             number = int(row_cnt[0])
             row_cnt = cursor.fetchone()
 
@@ -414,9 +414,6 @@ async def on_message(message):  # 메시지가 들어 올 때마다 가동되는
         cursor.execute('SELECT Access_ID FROM [VRCHAT].[dbo].[access];')
 
         row2 = cursor.fetchone()
-        print('---')
-        print(A_name[0])
-        print(A_name[1])
 
         allow_id = []
         while row2:
@@ -463,10 +460,12 @@ async def on_message(message):  # 메시지가 들어 올 때마다 가동되는
                 embed.add_field(name="다운로드 링크", value=A_url[i], inline=False)
 
                 await message.channel.send(file=file, embed=embed)
+                os.remove(save_path)
+
         else:
             embed = discord.Embed(title=":x:권한 없음!:x:",description="권한이 없는 디스코드 계정입니다.", color=0xCD1039)
             embed.add_field(name="권한이 부여된 계정", value=allow_id, inline=False)
 
-        await message.channel.send(embed=embed)
+            await message.channel.send(embed=embed)
 
 client.run(token1)
